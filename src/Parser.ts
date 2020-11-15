@@ -56,14 +56,39 @@ const factor = (ctx: Context): Nodes.Node => {
 }
 
 const term = (ctx: Context): Nodes.Node => {
-  return resolveBinaryOpNode(ctx, factor, [TT.MUL, TT.DIV])
+  const ops = [new Token(TT.MUL), new Token(TT.DIV)]
+  return resolveBinaryOpNode(ctx, factor, ops)
 }
 
 const expression = (ctx: Context): Nodes.Node => {
   const declarationNodes = resolveDeclarationNodes(ctx)
   if (declarationNodes) return declarationNodes
 
-  return resolveBinaryOpNode(ctx, term, [TT.ADD, TT.SUB])
+  const ops = [new Token(TT.KEYWORD, 'and'), new Token(TT.KEYWORD, 'or')]
+  return resolveBinaryOpNode(ctx, comparisonExpression, ops)
+}
+
+const comparisonExpression = (ctx: Context): Nodes.Node => {
+  if (ctx.token.eq(TT.KEYWORD, 'not')) {
+    const token = ctx.token
+    advance(ctx)
+    const node = comparisonExpression(ctx)
+    return new Nodes.UnaryOpNode(token, node)
+  }
+  const ops = [
+    new Token(TT.EQUALS),
+    new Token(TT.NOT_EQUALS),
+    new Token(TT.LESS_THAN),
+    new Token(TT.LESS_OR_EQ),
+    new Token(TT.GRATER_THAN),
+    new Token(TT.GREATER_OR_EQ)
+  ]
+  return resolveBinaryOpNode(ctx, arithmeticExpression, ops)
+}
+
+const arithmeticExpression = (ctx: Context): Nodes.Node => {
+  const ops = [new Token(TT.ADD), new Token(TT.SUB)]
+  return resolveBinaryOpNode(ctx, term, ops)
 }
 
 const resolveParenthesis = (ctx: Context): Nodes.Node | null => {
@@ -132,11 +157,11 @@ const resolveAccessAssigmentNodes = (ctx: Context): Nodes.Node | null => {
 const resolveBinaryOpNode = (
   ctx: Context,
   func: (ctx: Context) => Nodes.Node,
-  ops: TT[]
+  ops: Token[]
 ) => {
   let left = func(ctx)
 
-  while (ops.includes(ctx.token.type)) {
+  while (ops.find(token => token.eq(ctx.token.type, ctx.token.value))) {
     const op = ctx.token
     advance(ctx)
     const right = func(ctx)

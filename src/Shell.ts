@@ -19,7 +19,7 @@ const prompt = (terminal: Interface) => {
       const node = Parser.parse(tokens)
       console.log('AST =>', node.toString())
       const result = node.visit()
-      console.log('RESULT =>', result)
+      console.log('RESULT =>', result.toString())
     } catch (err) {
       if (err instanceof Exception) {
         console.log(err.toString())

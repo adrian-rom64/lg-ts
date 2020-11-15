@@ -91,24 +91,17 @@ describe('Lexer - operators', () => {
   it('!=', () => {
     expect(tokenize('!=')).to.deep.equal([token({ type: TT.NOT_EQUALS })])
   })
-  it('!', () => {
-    expect(tokenize('!')).to.deep.equal([token({ type: TT.NOT })])
+  it('<', () => {
+    expect(tokenize('<')).to.deep.equal([token({ type: TT.LESS_THAN })])
   })
-  it('&&', () => {
-    expect(tokenize('&&')).to.deep.equal([token({ type: TT.AND })])
+  it('>', () => {
+    expect(tokenize('>')).to.deep.equal([token({ type: TT.GRATER_THAN })])
   })
-  it('||', () => {
-    expect(tokenize('||')).to.deep.equal([token({ type: TT.OR })])
+  it('<=', () => {
+    expect(tokenize('<=')).to.deep.equal([token({ type: TT.LESS_OR_EQ })])
   })
-  it(' = || && != ! == ', () => {
-    expect(tokenize(' = || && != ! == ')).to.deep.equal([
-      token({ type: TT.EQ }),
-      token({ type: TT.OR }),
-      token({ type: TT.AND }),
-      token({ type: TT.NOT_EQUALS }),
-      token({ type: TT.NOT }),
-      token({ type: TT.EQUALS })
-    ])
+  it('>=', () => {
+    expect(tokenize('>=')).to.deep.equal([token({ type: TT.GREATER_OR_EQ })])
   })
 })
 

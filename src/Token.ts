@@ -16,7 +16,7 @@ class Token {
     return `${this.type}:${this.value}`
   }
 
-  public eq(type: TT, value?: string): boolean {
+  public eq(type: TT, value?: string | null): boolean {
     return this.type === type && this.value === (value ?? null)
   }
 }

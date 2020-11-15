@@ -3,10 +3,11 @@ import Exception from './Exception'
 import Token from './Token'
 import TT from './TT'
 import Heap from './Heap'
+import * as Variables from './Variables'
 
 export interface Node {
   toString(): string
-  visit(): number
+  visit(): Variables.Variable
 }
 
 export class BinaryOpNode implements Node {
@@ -24,25 +25,54 @@ export class BinaryOpNode implements Node {
     return `(${this.left}, ${this.op}, ${this.right})`
   }
 
-  public visit(): number {
+  public visit(): Variables.Variable {
     const left = this.left.visit()
     const right = this.right.visit()
     const op = this.op.type
 
     switch (op) {
       case TT.ADD:
-        return left + right
+        return left.operation('+', right)
       case TT.SUB:
-        return left - right
+        return left.operation('-', right)
       case TT.MUL:
-        return left * right
+        return left.operation('*', right)
       case TT.DIV:
-        return left / right
+        return left.operation('/', right)
       case TT.DIV:
-        return left % right
+        return left.operation('%', right)
     }
 
-    throw new Exception(ET.RuntimeError, '')
+    if (this.op.eq(TT.EQUALS)) {
+      return new Variables.Bool(left.equals(right))
+    }
+    if (this.op.eq(TT.NOT_EQUALS)) {
+      return new Variables.Bool(!left.equals(right))
+    }
+
+
+    if (this.op.eq(TT.LESS_THAN)) {
+      return new Variables.Bool(left.compare('<', right))
+    }
+    if (this.op.eq(TT.LESS_OR_EQ)) {
+      return new Variables.Bool(left.compare('<=', right))
+    }
+    if (this.op.eq(TT.GRATER_THAN)) {
+      return new Variables.Bool(left.compare('>', right))
+    }
+    if (this.op.eq(TT.GREATER_OR_EQ)) {
+      return new Variables.Bool(left.compare('>=', right))
+    }
+
+
+    if (this.op.eq(TT.KEYWORD, 'and')) {
+      return new Variables.Bool(left.toBool() && right.toBool())
+    }
+    if (this.op.eq(TT.KEYWORD, 'or')) {
+      return new Variables.Bool(left.toBool() || right.toBool())
+    }
+
+    throw new Exception(ET.RuntimeError, 'eeee')
   }
 }
 
@@ -59,7 +89,7 @@ export class AssigmentNode implements Node {
     return `(${this.identifier.value} = ${this.expr})`
   }
 
-  public visit(): number {
+  public visit(): Variables.Variable {
     const expr = this.expr.visit()
     const assigment = Heap.assign(this.identifier.value as string, expr)
     if (!assigment) {
@@ -80,8 +110,8 @@ export class DeclarationNode implements Node {
     return `(let ${this.identifier.value})`
   }
 
-  public visit(): number {
-    const inititalValue = 0
+  public visit(): Variables.Variable {
+    const inititalValue = new Variables.Null
     const declaration = Heap.declare(this.identifier.value as string)
     if (!declaration) {
       throw new Exception(ET.RuntimeError, 'Variable redeclared')
@@ -104,7 +134,7 @@ export class DeclarationAndAssigmentNode implements Node {
     return `(let ${this.identifier.value} = ${this.expr})`
   }
 
-  public visit(): number {
+  public visit(): Variables.Variable {
     const declaration = Heap.declare(this.identifier.value as string)
     if (!declaration) {
       throw new Exception(ET.RuntimeError, 'Varaible redeclared')
@@ -126,7 +156,7 @@ export class AccessNode implements Node {
     return this.identifier.value as string
   }
 
-  public visit(): number {
+  public visit(): Variables.Variable {
     const result = Heap.access(this.identifier.value as string)
     if (result === null) {
       throw new Exception(ET.RuntimeError, 'Variable undefined')
@@ -148,12 +178,14 @@ export class UnaryOpNode implements Node {
     return `(${this.op}, ${this.right})`
   }
 
-  public visit(): number {
-    if (this.op.type === TT.SUB) {
-      return this.right.visit() * -1
-    } else {
-      return this.right.visit()
+  public visit(): Variables.Variable {
+    if (this.op.eq(TT.KEYWORD, 'not')) {
+      return new Variables.Bool(!this.right.visit().toBool())
     }
+    if (this.op.type === TT.SUB) {
+      return this.right.visit().operation('-', new Variables.Integer(-1))
+    }
+    return this.right.visit()
   }
 }
 
@@ -168,11 +200,11 @@ export class NumberNode implements Node {
     return this.num.value as string
   }
 
-  public visit(): number {
+  public visit(): Variables.Variable {
     if (this.num.type === TT.INT) {
-      return parseInt(this.num.value as string)
+      return new Variables.Integer(this.num.value as string)
     } else {
-      return parseFloat(this.num.value as string)
+      return new Variables.Float(this.num.value as string)
     }
   }
 }

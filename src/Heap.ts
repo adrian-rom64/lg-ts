@@ -1,18 +1,20 @@
+import { Variable, Null } from './Variables'
+
 class Heap {
-  private data: { [key: string]: number }
+  private data: { [key: string]: Variable }
 
   constructor() {
-    this.data = { env: 0 }
+    this.data = { env: new Null }
   }
 
-  public access(identifier: string): number | null {
+  public access(identifier: string): Variable | null {
     if (identifier in this.data) {
       return this.data[identifier]
     }
     return null
   }
 
-  public assign(identifier: string, value: number): boolean {
+  public assign(identifier: string, value: Variable): boolean {
     if (identifier in this.data) {
       this.data[identifier] = value
       return true
@@ -22,7 +24,7 @@ class Heap {
 
   public declare(identifier: string): boolean {
     if (!(identifier in this.data)) {
-      this.data[identifier] = 0
+      this.data[identifier] = new Null
       return true
     }
     return false

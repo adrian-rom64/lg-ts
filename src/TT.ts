@@ -23,6 +23,11 @@ class TT {
   static readonly NOT = new TT('NOT')
   static readonly EQUALS = new TT('EQUALS')
   static readonly NOT_EQUALS = new TT('NOT_EQUALS')
+  static readonly LESS_THAN = new TT('LESS_THAN')
+  static readonly GRATER_THAN = new TT('GRATER_THAN')
+  static readonly LESS_OR_EQ = new TT('LESS_OR_EQ')
+  static readonly GREATER_OR_EQ = new TT('GREATER_OR_EQ')
+
 
   name: string
 

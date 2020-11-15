@@ -91,7 +91,7 @@ const matchNumber = (ctx: Context): Token => {
 }
 
 const matchWord = (ctx: Context) => {
-  const keywords = ['let']
+  const keywords = ['let', 'not', 'and', 'or']
   let word = ''
 
   while (isLetter(ctx.char) || (isDigit(ctx.char) && !ctx.end)) {
@@ -132,7 +132,7 @@ const isDigit = (char: string): boolean => {
 }
 
 const isOperator = (char: string): boolean => {
-  const ops = '+-*/%()=!&|'.split('')
+  const ops = '+-*/%()=<>'.split('')
   return ops.includes(char)
 }
 
@@ -156,24 +156,18 @@ const matchOperator = (ctx: Context): TT | null => {
       return TT.LP
     case ')':
       return TT.RP
-    case '&':
-      advance(ctx)
-      if (ctx.char === '&') {
-        return TT.AND
-      }
-      throw new Exception(ET.InvalidSyntax, 'Expected &')
-    case '|':
-      advance(ctx)
-      if (ctx.char === '|') {
-        return TT.OR
-      }
-      throw new Exception(ET.InvalidSyntax, 'Expecteded |')
     case '=':
       advance(ctx)
-      return ctx.char === '=' ? TT.EQUALS : TT.EQ
+      return <string>ctx.char === '=' ? TT.EQUALS : TT.EQ
     case '!':
       advance(ctx)
-      return (ctx.char as string) === '=' ? TT.NOT_EQUALS : TT.NOT
+      return <string>ctx.char === '=' ? TT.NOT_EQUALS : TT.NOT
+    case '<':
+      advance(ctx)
+      return <string>ctx.char === '=' ? TT.LESS_OR_EQ : TT.LESS_THAN
+    case '>':
+      advance(ctx)
+      return <string>ctx.char === '=' ? TT.GREATER_OR_EQ : TT.GRATER_THAN
     default:
       return null
   }

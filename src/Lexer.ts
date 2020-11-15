@@ -132,7 +132,7 @@ const isDigit = (char: string): boolean => {
 }
 
 const isOperator = (char: string): boolean => {
-  const ops = '+-*/%()=<>'.split('')
+  const ops = '+-*/%()=<>!'.split('')
   return ops.includes(char)
 }
 
@@ -161,7 +161,10 @@ const matchOperator = (ctx: Context): TT | null => {
       return <string>ctx.char === '=' ? TT.EQUALS : TT.EQ
     case '!':
       advance(ctx)
-      return <string>ctx.char === '=' ? TT.NOT_EQUALS : TT.NOT
+      if (<string>ctx.char === '=') {
+        return TT.NOT_EQUALS
+      }
+      throw new Exception(ET.InvalidSyntax, 'Expected =')
     case '<':
       advance(ctx)
       return <string>ctx.char === '=' ? TT.LESS_OR_EQ : TT.LESS_THAN

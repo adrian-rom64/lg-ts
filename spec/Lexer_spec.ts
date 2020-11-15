@@ -12,7 +12,7 @@ const token = (input: { type: TT; value?: string }) => {
   return new Token(input.type, input.value ?? null)
 }
 
-describe('Lexer - Correct', () => {
+describe('Lexer - numbers and arithmetics', () => {
   it('3', () => {
     expect(tokenize('3')).deep.equal([token({ type: TT.INT, value: '3' })])
   })
@@ -53,12 +53,18 @@ describe('Lexer - Correct', () => {
       token({ type: TT.INT, value: '1' })
     ])
   })
+})
+
+describe('Lexer - empty', () => {
   it('', () => {
     expect(tokenize('')).deep.equal([])
   })
   it(' \t ', () => {
     expect(tokenize(' \t ')).deep.equal([])
   })
+})
+
+describe('Lexer - variables', () => {
   it('let ab = 12.5', () => {
     expect(tokenize('let ab = 12.5')).to.deep.eq([
       token({ type: TT.KEYWORD, value: 'let' }),
@@ -81,7 +87,7 @@ describe('Lexer - Correct', () => {
   })
 })
 
-describe('Lexer - operators', () => {
+describe('Lexer - conditions', () => {
   it('==', () => {
     expect(tokenize('==')).to.deep.equal([token({ type: TT.EQUALS })])
   })
@@ -103,6 +109,15 @@ describe('Lexer - operators', () => {
   it('>=', () => {
     expect(tokenize('>=')).to.deep.equal([token({ type: TT.GREATER_OR_EQ })])
   })
+  it('and', () => {
+    expect(tokenize('and')).to.deep.equal([token({ type: TT.KEYWORD, value: 'and' })])
+  })
+  it('or', () => {
+    expect(tokenize('or')).to.deep.equal([token({ type: TT.KEYWORD, value: 'or' })])
+  })
+  it('not', () => {
+    expect(tokenize('not')).to.deep.equal([token({ type: TT.KEYWORD, value: 'not' })])
+  })
 })
 
 describe('Lexer - throws error', () => {
@@ -111,5 +126,8 @@ describe('Lexer - throws error', () => {
   })
   it('^', () => {
     expect(() => tokenize('^')).to.throw(ET.IllegalCharacter.name)
+  })
+  it('!', () => {
+    expect(() => tokenize('^')).to.throw(ET.InvalidSyntax.name)
   })
 })

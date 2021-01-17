@@ -128,6 +128,18 @@ describe('Lexer - throws error', () => {
     expect(() => tokenize('^')).to.throw(ET.IllegalCharacter.name)
   })
   it('!', () => {
-    expect(() => tokenize('^')).to.throw(ET.InvalidSyntax.name)
+    expect(() => tokenize('!')).to.throw(ET.InvalidSyntax.name)
+  })
+})
+
+describe('Lexer - strings', () => {
+  it('\'string\'', () => {
+    expect(tokenize('\'string\'')).to.deep.equal([token({ type: TT.STRING, value: 'string' })])
+  })
+  it('\'Illegal symbols allowed in string\'', () => {
+    expect(tokenize('\'@ ~ ^\'')).to.deep.equal([token({ type: TT.STRING, value: '@ ~ ^' })])
+  })
+  it('Unfinished string', () => {
+    expect(() => tokenize('\'aaa')).to.throw(ET.InvalidSyntax.name)
   })
 })

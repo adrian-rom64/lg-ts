@@ -1,7 +1,5 @@
 import readline, { Interface } from 'readline'
-import Exception from './Exception'
-import Lexer from './Lexer'
-import Parser from './Parser'
+import Interpreter from './Interpreter'
 
 const start = () => {
   const terminal = readline.createInterface({
@@ -13,20 +11,7 @@ const start = () => {
 
 const prompt = (terminal: Interface) => {
   terminal.question('Ida > ', (input) => {
-    try {
-      const tokens = Lexer.tokenize(input)
-      console.log('TOKENS =>', tokens)
-      const node = Parser.parse(tokens)
-      console.log('AST =>', node.toString())
-      const result = node.visit()
-      console.log('RESULT =>', result.toString())
-    } catch (err) {
-      if (err instanceof Exception) {
-        console.log(err.toString())
-      } else {
-        throw err
-      }
-    }
+    Interpreter.eval(input, true)
     prompt(terminal)
   })
 }

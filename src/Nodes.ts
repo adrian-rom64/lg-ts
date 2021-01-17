@@ -39,7 +39,7 @@ export class BinaryOpNode implements Node {
         return left.operation('*', right)
       case TT.DIV:
         return left.operation('/', right)
-      case TT.DIV:
+      case TT.MOD:
         return left.operation('%', right)
     }
 

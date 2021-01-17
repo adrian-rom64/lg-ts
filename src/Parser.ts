@@ -56,7 +56,7 @@ const factor = (ctx: Context): Nodes.Node => {
 }
 
 const term = (ctx: Context): Nodes.Node => {
-  const ops = [new Token(TT.MUL), new Token(TT.DIV)]
+  const ops = [new Token(TT.MUL), new Token(TT.DIV), new Token(TT.MOD)]
   return resolveBinaryOpNode(ctx, factor, ops)
 }
 

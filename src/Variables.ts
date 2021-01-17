@@ -9,15 +9,46 @@ const notImplemented = (type1: Type, op: Op, type2: Type) => {
   return new Exception(ET.RuntimeError, `Not implemented => ${type1} ${op} ${type2}`)
 }
 
-interface IVariable {
-  toString: () => string
-  toBool: () => boolean
-  operation: (operator: Op, operand: Variable) => Variable
-  equals: (operand: Variable) => boolean
-  compare: (operator: Comparison, operand: Variable) => boolean
+const operation = (var1: Integer | Float, var2: Integer | Float, operator: Op, type: 'int' | 'float') => {
+  let result = 0
+  switch (operator) {
+    case '+':
+      result = var1.val + var2.val
+      break
+    case '-':
+      result = var1.val - var2.val
+      break
+    case '*':
+      result = var1.val * var2.val
+      break
+    case '/':
+      result = var1.val / var2.val
+      break
+    case '%':
+      result = var1.val % var2.val
+      break
+  }
+  if (type === 'int') {
+    return new Integer(result)
+  }
+  return new Float(result)
 }
 
-export abstract class Variable implements IVariable {
+const compare = (var1: Integer | Float, var2: Integer | Float, operator: Comparison) => {
+  switch (operator) {
+    case '<':
+      return var1.val < var2.val
+    case '<=':
+      return var1.val <= var2.val
+    case '>':
+      return var1.val > var2.val
+    case '>=':
+      return var1.val >= var2.val
+    default: return false
+  }
+}
+
+export abstract class Variable {
   static count = 0
   id: number
   type: Type
@@ -29,27 +60,27 @@ export abstract class Variable implements IVariable {
   }
 
   public toString (): string {
-    return `variable <${this.id}>`
+    throw new Exception(ET.RuntimeError, `toString not implemented on ${this.constructor.name}`)
   }
 
   public operation (operator: Op, operand: Variable): Variable {
-    throw notImplemented(this.type, operator, operand.type)
+    throw new Exception(ET.RuntimeError, `operation not implemented on ${this.constructor.name}`)
   }
 
   public toBool (): boolean {
-    return false
+    throw new Exception(ET.RuntimeError, `toBool not implemented on ${this.constructor.name}`)
   }
 
-  public equals (operand: Variable) {
-    return false
+  public equals (operand: Variable): boolean {
+    throw new Exception(ET.RuntimeError, `equals not implemented on ${this.constructor.name}`)
   }
 
   public compare (operator: Comparison, operand: Variable): boolean {
-    throw new Exception(ET.RuntimeError, 'Comparison not implemented')
+    throw new Exception(ET.RuntimeError, `compare not implemented on ${this.constructor.name}`)
   }
 }
 
-export class Integer extends Variable implements IVariable {
+export class Integer extends Variable {
   val: number
 
   constructor (input: string | number) {
@@ -79,53 +110,21 @@ export class Integer extends Variable implements IVariable {
   public compare (operator: Comparison, operand: Variable): boolean {
     if (!(operand instanceof Integer || operand instanceof Float)) return false
 
-    switch (operator) {
-      case '<':
-        return this.val < operand.val
-      case '<=':
-        return this.val <= operand.val
-      case '>':
-        return this.val > operand.val
-      case '>=':
-        return this.val >= operand.val
-      default: return false
-    }
+    return compare(this, operand, operator)
   }
 
   public operation (operator: Op, operand: Variable): Variable {
     if (operand instanceof Integer) {
-      switch (operator) {
-        case '+':
-          return new Integer(this.val + operand.val)
-        case '-':
-          return new Integer(this.val - operand.val)
-        case '*':
-          return new Integer(this.val * operand.val)
-        case '/':
-          return new Integer(this.val / operand.val)
-        case '%':
-          return new Integer(this.val % operand.val)
-      }
+      return operation(this, operand, operator, 'int')
     }
     if (operand instanceof Float) {
-      switch (operator) {
-        case '+':
-          return new Float(this.val + operand.val)
-        case '-':
-          return new Float(this.val - operand.val)
-        case '*':
-          return new Float(this.val * operand.val)
-        case '/':
-          return new Float(this.val / operand.val)
-        case '%':
-          return new Float(this.val % operand.val)
-      }
+      return operation(this, operand, operator, 'float')
     }
     throw notImplemented(this.type, operator, operand.type)
   }
 }
 
-export class Float extends Variable implements IVariable {
+export class Float extends Variable {
   val: number
 
   constructor (input: string | number) {
@@ -154,38 +153,22 @@ export class Float extends Variable implements IVariable {
 
   public operation (operator: Op, operand: Variable): Variable {
     if (operand instanceof Integer) {
-      switch (operator) {
-        case '+':
-          return new Float(this.val + operand.val)
-        case '-':
-          return new Float(this.val - operand.val)
-        case '*':
-          return new Float(this.val * operand.val)
-        case '/':
-          return new Float(this.val / operand.val)
-        case '%':
-          return new Float(this.val % operand.val)
-      }
+      return operation(this, operand, operator, 'float')
     }
     if (operand instanceof Float) {
-      switch (operator) {
-        case '+':
-          return new Float(this.val + operand.val)
-        case '-':
-          return new Float(this.val - operand.val)
-        case '*':
-          return new Float(this.val * operand.val)
-        case '/':
-          return new Float(this.val / operand.val)
-        case '%':
-          return new Float(this.val % operand.val)
-      }
+      return operation(this, operand, operator, 'float')
     }
     throw notImplemented(this.type, operator, operand.type)
   }
+
+  public compare (operator: Comparison, operand: Variable): boolean {
+    if (!(operand instanceof Integer || operand instanceof Float)) return false
+
+    return compare(this, operand, operator)
+  }
 }
 
-export class Bool extends Variable implements IVariable {
+export class Bool extends Variable {
   val: boolean
 
   constructor (input: boolean) {
@@ -209,7 +192,7 @@ export class Bool extends Variable implements IVariable {
   }
 }
 
-export class Null extends Variable implements IVariable {
+export class Null extends Variable {
   constructor () {
     super('null')
   }

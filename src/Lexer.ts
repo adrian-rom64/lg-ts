@@ -33,6 +33,9 @@ const tokenize = (input: string): Token[] => {
     if (isLetter(ctx.char)) {
       tokens.push(matchWord(ctx))
     }
+    if (ctx.char === '\'') {
+      tokens.push(matchString(ctx))
+    }
     const sign = matchOperator(ctx)
     if (sign) {
       tokens.push(new Token(sign))
@@ -112,6 +115,22 @@ const matchWord = (ctx: Context) => {
   }
 }
 
+const matchString = (ctx: Context): Token => {
+  let str = ''
+
+  advance(ctx)
+  while (ctx.char !== '\'') {
+    if (ctx.end) {
+      throw new Exception(ET.InvalidSyntax, 'Expected \'')
+    }
+
+    str += ctx.char
+    advance(ctx)
+  }
+
+  return new Token(TT.STRING, str)
+}
+
 const isLetter = (char: string): boolean => {
   const lowerMin = 97 // char a
   const lowerMax = 122 // char z
@@ -132,7 +151,7 @@ const isDigit = (char: string): boolean => {
 }
 
 const isOperator = (char: string): boolean => {
-  const ops = '+-*/%()=<>!'.split('')
+  const ops = '+-*/%()=<>!\''.split('')
   return ops.includes(char)
 }
 
@@ -142,20 +161,13 @@ const isWhiteSpace = (char: string): boolean => {
 
 const matchOperator = (ctx: Context): TT | null => {
   switch (ctx.char) {
-    case '+':
-      return TT.ADD
-    case '-':
-      return TT.SUB
-    case '*':
-      return TT.MUL
-    case '/':
-      return TT.DIV
-    case '%':
-      return TT.MOD
-    case '(':
-      return TT.LP
-    case ')':
-      return TT.RP
+    case '+': return TT.ADD
+    case '-': return TT.SUB
+    case '*': return TT.MUL
+    case '/': return TT.DIV
+    case '%': return TT.MOD
+    case '(': return TT.LP
+    case ')': return TT.RP
     case '=':
       advance(ctx)
       return <string>ctx.char === '=' ? TT.EQUALS : TT.EQ
